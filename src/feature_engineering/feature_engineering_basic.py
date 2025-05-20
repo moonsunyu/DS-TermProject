@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # 결측치 제거된 데이터셋
-df = pd.read_csv("data/movies_cleaned.csv")
+df = pd.read_csv("data/cleaned/movies_cleaned.csv")
 
 # year, released 제거
 df.drop(columns=['year', 'released'], inplace=True, errors='ignore')
@@ -45,5 +45,5 @@ df.drop(columns=[
 # is_hit: gross가 budget의 2배 이상이면 흥행 성공으로 간주; 0(실패) 또는 1(흥행)
 df['is_hit'] = (df['gross'] > 2 * df['budget']).astype(int)
 
-df.to_csv("data/movies_feature_engineered_basic.csv", index=False)
+df.to_csv("data/feature-engineered/movies_feature_engineered_basic.csv", index=False)
 
