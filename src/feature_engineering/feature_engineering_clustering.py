@@ -80,3 +80,11 @@ for k, v in cluster_names.items():
 
 df.to_csv("data/movies_feature_engineering_clustered.csv", index=False)
 
+# 검증 코드
+df_clustered = pd.read_csv("data/movies_feature_engineering_clustered.csv")
+
+print("\nDataset shape (rows, columns):", df_clustered.shape)
+print("\nColumn names in the dataset:")
+print(df_clustered.columns)
+print("\nData types of each column:")
+print(df_clustered.dtypes)
