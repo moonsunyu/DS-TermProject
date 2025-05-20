@@ -2,11 +2,11 @@ import pandas as pd
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-df = pd.read_csv("data/movies_original_dataset.csv")
+df = pd.read_csv("data/raw/movies_original_dataset.csv")
 
 # 백업
 df_original = df.copy()
-df_original.to_csv("data/movies_backup.csv", index=False)
+df_original.to_csv("data/raw/movies_backup.csv", index=False)
 
 # 결측치가 존재하는 컬럼
 missing_columns = df_original.columns[df.isnull().any()]
@@ -79,11 +79,11 @@ print("\nAfter Replacing NaN:")
 for col in missing_columns:
     print(f"- {col}: {df[col].isnull().sum()} entries missing")
 
-df.to_csv("data/movies_cleaned.csv", index=False)
+df.to_csv("data/cleaned/movies_cleaned.csv", index=False)
 print("Saved cleaned file to movies_cleaned.csv file")
 
 # 점검용 코드
-df2 = pd.read_csv("movies_cleaned.csv")
+df2 = pd.read_csv("data/cleaned/movies_cleaned.csv")
 print(df2.shape)
 print(df2.columns)
 print(df2.dtypes)

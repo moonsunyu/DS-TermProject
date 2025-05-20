@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 
 # feature engineering된 데이터셋 (clustering 전)
-df = pd.read_csv("data/movies_feature_engineered_basic.csv") 
+df = pd.read_csv("data/feature-engineered/movies_feature_engineered_basic.csv") 
 
 # Clustering: k-means
 # 영화 데이터를 유형별로 분류해서 숨겨진 패턴을 찾아내기 위한 기법
