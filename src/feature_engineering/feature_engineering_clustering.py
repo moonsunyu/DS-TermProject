@@ -59,7 +59,7 @@ for cluster in cluster_summary.index:
             name = "a high-budget failure"
     elif budget < 3e7:
         if hit_rate >= 0.5:
-            name = "a low-budget failure"
+            name = "a low-budget success"
         else:
             name = "a low-budget failure"
     else:
