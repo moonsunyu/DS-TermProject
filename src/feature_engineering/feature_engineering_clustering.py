@@ -23,15 +23,15 @@ X_pca = pca.fit_transform(X_scaled)
 kmeans3 = KMeans(n_clusters=3, random_state=42)
 labels3 = kmeans3.fit_predict(X_scaled)
 
-# 시각화
-plt.figure(figsize=(12, 5))
-# K=3
-plt.subplot(1, 2, 1)
-plt.scatter(X_pca[:, 0], X_pca[:, 1], c=labels3, cmap='viridis')
-plt.title("K-Means Clustering (k=3)")
-plt.xlabel("PCA Component 1")
-plt.ylabel("PCA Component 2")
-plt.show() 
+# # 시각화
+# plt.figure(figsize=(12, 5))
+# # K=3
+# plt.subplot(1, 2, 1)
+# plt.scatter(X_pca[:, 0], X_pca[:, 1], c=labels3, cmap='viridis')
+# plt.title("K-Means Clustering (k=3)")
+# plt.xlabel("PCA Component 1")
+# plt.ylabel("PCA Component 2")
+# plt.show() 
 
 # KMeans 클러스터링 (k=3)
 kmeans = KMeans(n_clusters=3, random_state=42)
@@ -78,13 +78,5 @@ for k, v in cluster_names.items():
     print(f"Cluster {k}: {v}")
 
 
-df.to_csv("data/feature-engineered/movies_preprocessed.csv ", index=False)
+df.to_csv("data/feature-engineered/movies_preprocessed.csv", index=False)
 
-# 검증 코드
-df_clustered = pd.read_csv("data/feature-engineered/movies_preprocessed.csv ")
-
-print("\nDataset shape (rows, columns):", df_clustered.shape)
-print("\nColumn names in the dataset:")
-print(df_clustered.columns)
-print("\nData types of each column:")
-print(df_clustered.dtypes)
