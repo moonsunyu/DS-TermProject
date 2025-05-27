@@ -48,12 +48,6 @@ print("Accuracy:", accuracy_score(y_test, y_pred))
 print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
-fpr, tpr, _ = roc_curve(y_test, y_score)
-roc_auc = auc(fpr, tpr)
-
-# 10. Precision-Recall Curve
-precision, recall, _ = precision_recall_curve(y_test, y_score)
-ap_score = average_precision_score(y_test, y_score)
 
 # 11. Feature Importance 그룹 시각화
 importances = clf.feature_importances_
@@ -78,7 +72,7 @@ feature_importance_df['group'] = feature_importance_df['feature'].map(category_m
 grouped_importance = feature_importance_df.groupby('group')['importance'].sum().sort_values(ascending=False)
 
 
-# Feature Importance (log scale)
+# Feature Importance 시각화 (log scale)
 sns.barplot(x=grouped_importance.values, y=grouped_importance.index, palette='magma')
 plt.xscale('log')
 plt.title("Total Feature Importance by Category (Log Scale)")
@@ -86,6 +80,3 @@ plt.xlabel("Log(Importance)")
 plt.ylabel("Feature Group")
 
 plt.show()
-
-
-# 가장 유력하다!
