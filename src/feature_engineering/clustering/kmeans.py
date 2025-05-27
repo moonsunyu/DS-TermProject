@@ -82,10 +82,11 @@ plt.xlabel("PCA Component 1")
 plt.ylabel("PCA Component 2")
 
 plt.tight_layout()
-plt.show() # k=3 선택
+plt.show() 
 
 for k in range(2, 8):
     kmeans = KMeans(n_clusters=k, random_state=42)
     labels = kmeans.fit_predict(X_scaled)
     score = silhouette_score(X_scaled, labels)
     print(f"k={k}, Silhouette Score={score:.4f}")
+# k=3 선택
