@@ -6,11 +6,11 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 
 # feature engineering된 데이터셋 (clustering 전)
-df = pd.read_csv("data/feature-engineered/movies_feature_engineered_basic.csv") 
+df = pd.read_csv("data/feature-engineered/movies_normalized.csv") 
 
 # Clustering: k-means
 # 영화 데이터를 유형별로 분류해서 숨겨진 패턴을 찾아내기 위한 기법
-cluster_features = ['budget', 'runtime', 'score', 'log_votes', 'weighted_score']
+cluster_features = ['budget', 'weighted_score']
 X = df[cluster_features]
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
@@ -44,28 +44,30 @@ cluster_summary['count'] = df['cluster'].value_counts().sort_index()
 
 # 클러스터 이름 붙이기
 # 클러스터별 특성을 보고 수동으로 이름을 붙여줌
-cluster_names = {}
 
-# 예시로 budget과 is_hit 기준으로 분류해보기
+# 분위수 확인
+print(df['budget'].describe())
+
+cluster_names = {}
 for cluster in cluster_summary.index:
     row = cluster_summary.loc[cluster]
     budget = row['budget']
     hit_rate = row['is_hit']
 
-    if budget >= 5e7:
+    if budget >= 0.78:    # 상위 20%
         if hit_rate >= 0.5:
-            name = "a high-budget success"
+                name = "high-budget-success"
         else:
-            name = "a high-budget failure"
-    elif budget < 3e7:
+                name = "high-budget-failure"   
+    elif budget < 0.70:          # 하위 20%
         if hit_rate >= 0.5:
-            name = "a low-budget success"
+                name = "low-budget-success"
         else:
-            name = "a low-budget failure"
+                name = "low-budget-failure" 
     else:
-        name = "medium budget"
-    
-    cluster_names[cluster] = name
+        name = "mid-budget"
+
+    cluster_names[cluster] = name 
 
 # 이름 매핑 추가
 df['cluster_label'] = df['cluster'].map(cluster_names)
@@ -78,5 +80,6 @@ for k, v in cluster_names.items():
     print(f"Cluster {k}: {v}")
 
 
-df.to_csv("data/feature-engineered/movies_preprocessed.csv", index=False)
+df.to_csv("data/feature-engineered/movies_clustered.csv", index=False)
+
 

@@ -1,51 +1,91 @@
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import classification_report
-from sklearn.preprocessing import LabelEncoder
-import joblib
-import os
-
-# 1. 데이터 불러오기
-df = pd.read_csv("data/normalized/movies_preprocessed_normalized.csv")
-
-# 2. 문자열 변수 인코딩
-categorical_cols = [
-    "rating", "runtime_category", "director_top10", "writer_top10",
-    "star_top30", "genre_top10", "country_top5", "company_top10"
-]
-for col in categorical_cols:
-    df[col] = LabelEncoder().fit_transform(df[col].astype(str))
-
-# 3. feature / label 분리
-drop_cols = ["is_hit", "gross", "name", "cluster_label"]
-X = df.drop(columns=drop_cols)
-y = df["is_hit"]
-
-# 4. 학습/테스트 분리
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    roc_curve,
+    auc,
+    precision_recall_curve,
+    average_precision_score
 )
 
-# 5. 모델 학습
-clf = DecisionTreeClassifier(max_depth=4, random_state=42)
+# 1. 데이터 로드
+df = pd.read_csv("data/feature-engineered/movies_clustered.csv")
+df_model = df.drop(columns=['name', 'cluster', 'gross', 'budget', 'votes'])
+
+# 2. 피처 설정
+numeric_cols = ['score', 'log_votes', 'runtime', 'weighted_score']
+categorical_cols = [
+    'rating', 'runtime_category', 'director_top10', 'writer_top10',
+    'star_top30', 'genre_top10', 'country_top5', 'company_top10', 'cluster_label'
+]
+
+# 3. 인코딩
+df_encoded = pd.get_dummies(df_model, columns=categorical_cols, drop_first=True)
+
+# 4. X, y 정의
+X = df_encoded.drop(columns=['is_hit'])
+y = df_encoded['is_hit']
+
+# 5. 분할
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 6. 모델 학습
+clf = DecisionTreeClassifier(criterion="entropy", max_depth=5, random_state=42)
 clf.fit(X_train, y_train)
 
-# 6. 교차검증
-cv_scores = cross_val_score(clf, X_train, y_train, cv=5, scoring="accuracy")
-print(f"5-Fold CV 평균 정확도: {cv_scores.mean():.4f}")
-
-# 7. 테스트셋 평가
+# 7. 예측 및 평가
 y_pred = clf.predict(X_test)
-report = classification_report(y_test, y_pred, digits=4)
-print(report)
+y_score = clf.predict_proba(X_test)[:, 1]
 
-# 8. 결과 저장
-os.makedirs("results/model-report", exist_ok=True)
-with open("results/model-report/decision_report.txt", "w") as f:
-    f.write(report)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
-# 9. 모델 저장
-os.makedirs("model", exist_ok=True)
-joblib.dump(clf, "model/decision_tree_model.pkl")
-print("모델 저장 완료: model/decision_tree_model.pkl")
+fpr, tpr, _ = roc_curve(y_test, y_score)
+roc_auc = auc(fpr, tpr)
+
+# 10. Precision-Recall Curve
+precision, recall, _ = precision_recall_curve(y_test, y_score)
+ap_score = average_precision_score(y_test, y_score)
+
+# 11. Feature Importance 그룹 시각화
+importances = clf.feature_importances_
+feature_names = X.columns
+feature_importance_df = pd.DataFrame({
+    'feature': feature_names,
+    'importance': importances
+}).sort_values(by='importance', ascending=False)
+
+category_map = {}
+for feature in feature_importance_df['feature']:
+    matched = False
+    for cat in categorical_cols:
+        if feature.startswith(cat + '_'):
+            category_map[feature] = cat
+            matched = True
+            break
+    if not matched:
+        category_map[feature] = feature  # numeric feature
+
+feature_importance_df['group'] = feature_importance_df['feature'].map(category_map)
+grouped_importance = feature_importance_df.groupby('group')['importance'].sum().sort_values(ascending=False)
+
+
+# Feature Importance (log scale)
+sns.barplot(x=grouped_importance.values, y=grouped_importance.index, palette='magma')
+plt.xscale('log')
+plt.title("Total Feature Importance by Category (Log Scale)")
+plt.xlabel("Log(Importance)")
+plt.ylabel("Feature Group")
+
+plt.show()
+
+
+# 가장 유력하다!
