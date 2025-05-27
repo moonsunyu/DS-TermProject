@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # 결측치 제거된 데이터셋
-df = pd.read_csv("data/cleaned/movies_cleaned.csv")
+df = pd.read_csv("data/cleaned/movies_cleaned_outliers.csv")
 
 # year, released 제거
 df.drop(columns=['year', 'released'], inplace=True, errors='ignore')
@@ -32,7 +32,7 @@ df = create_top_n_column(df, 'director', 10, 'director_top10')      # 상위 10 
 df = create_top_n_column(df, 'writer', 10, 'writer_top10')          # 상위 10 writer
 df = create_top_n_column(df, 'star', 30, 'star_top30')              # 상위 30 star
 df = create_top_n_column(df, 'genre', 10, 'genre_top10')            # 상위 10 genre
-df = create_top_n_column(df, 'country', 5, 'country_top5')          # 상위 3 country
+df = create_top_n_column(df, 'country', 5, 'country_top5')          # 상위 5 country
 df = create_top_n_column(df, 'company', 10, 'company_top10')        # 상위 10 company
 
 

@@ -5,7 +5,7 @@ import seaborn as sns
 import pandas as pd
 
 # 원본 데이터 읽기
-df2 = pd.read_csv("data/feature-engineered/movies_preprocessed.csv")
+df2 = pd.read_csv("data/feature-engineered/movies_feature_engineered_basic.csv")
 df_movies_normalized = df2.copy()
 
 # 로그 변환 대상 컬럼
@@ -23,7 +23,7 @@ scaler_log = MinMaxScaler()
 df_movies_normalized[log_cols] = scaler_log.fit_transform(df_movies_normalized[log_cols])
 
 # 원본 보존
-df_movies_normalized.to_csv("data/feature-engineered/movies_preprocessed_normalized.csv", index=False)
+df_movies_normalized.to_csv("data/feature-engineered/movies_normalized.csv", index=False)
 
 fig, axes = plt.subplots(len(log_cols + minmax_cols), 2, figsize=(12, 5 * len(log_cols + minmax_cols)))
 
