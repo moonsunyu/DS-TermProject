@@ -91,3 +91,5 @@ print("\nMissing values")
 missing_info = df2.isnull().sum().sort_values(ascending=False)
 missing_ratio = df2.isnull().mean().sort_values(ascending=False)
 print(pd.concat([missing_info, missing_ratio], axis=1, keys=["Missing Count", "Missing Ratio"]))
+
+print("데이터셋 저장 완료: data/cleaned/movies_cleaned.csv")

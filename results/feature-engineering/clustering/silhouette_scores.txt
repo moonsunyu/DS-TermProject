@@ -1,0 +1,6 @@
+k=2, Silhouette Score=0.3497
+k=3, Silhouette Score=0.3469
+k=4, Silhouette Score=0.3201
+k=5, Silhouette Score=0.3392
+k=6, Silhouette Score=0.3264
+k=7, Silhouette Score=0.3147

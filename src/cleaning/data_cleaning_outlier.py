@@ -17,4 +17,5 @@ df_cleaned_outliers = df[outlier_pred != -1]  # 정상치만 남김
 
 # (결과 저장
 df_cleaned_outliers.to_csv("data/cleaned/movies_cleaned_outliers.csv", index=False)
-print("정상치 데이터셋 저장 완료: movies_cleaned_outliers.csv")
+
+print("데이터셋 저장 완료: data/cleaned/movies_cleaned_outliers.csv")
