@@ -38,3 +38,5 @@ for i, col in enumerate(log_cols + minmax_cols):
 
 plt.tight_layout()
 plt.show()
+
+print("데이터셋 저장 완료: data/feature-engineered/movies_normalized.csv")

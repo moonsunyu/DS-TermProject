@@ -1,0 +1,18 @@
+Model: XGBoost
+Accuracy: 0.9517
+Cross-validation scores: [0.93960511 0.93031359 0.93379791 0.93612079 0.93255814]
+Mean CV accuracy: 0.9345, Std: 0.0032
+
+Confusion Matrix:
+[[528  30]
+ [ 22 497]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.96      0.95      0.95       558
+           1       0.94      0.96      0.95       519
+
+    accuracy                           0.95      1077
+   macro avg       0.95      0.95      0.95      1077
+weighted avg       0.95      0.95      0.95      1077

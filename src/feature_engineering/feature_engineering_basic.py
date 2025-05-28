@@ -47,3 +47,4 @@ df['is_hit'] = (df['gross'] > 2 * df['budget']).astype(int)
 
 df.to_csv("data/feature-engineered/movies_feature_engineered_basic.csv", index=False)
 
+print("데이터셋 저장 완료: data/feature-engineered/movies_feature_engineered_basic.csv")

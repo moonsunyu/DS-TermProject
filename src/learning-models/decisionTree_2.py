@@ -1,20 +1,33 @@
+# decisionTree_2.py
+# 전처리된 데이터셋에서 gross, budget drop하고 난 뒤에 기본적인 모델 학습 실행
+
+# 모델 학습에 활용되는 feature가 제한된다는 문제는 해결됐으나
+# 모델의 정확도가 크게 떨어짐; 사용할 수 없음
+
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import confusion_matrix, classification_report
+
+# 저장 경로 설정
+save_dir = "results/learning-models/decisionTree2"
+os.makedirs(save_dir, exist_ok=True)
 
 # 1. 데이터 로드
 df = pd.read_csv("data/feature-engineered/movies_clustered.csv")
-df_model = df.drop(columns=['name', 'cluster', 'gross', 'budget'])
+df_model = df.drop(columns=['name', 'cluster_label', 'votes', 'gross', 'budget']) # gross, budget 모두 drop
 
 # 2. 피처 설정
 numeric_cols = ['score', 'log_votes', 'runtime', 'weighted_score']
 categorical_cols = [
     'rating', 'runtime_category', 'director_top10', 'writer_top10',
-    'star_top30', 'genre_top10', 'country_top5', 'company_top10', 'cluster_label'
+    'star_top30', 'genre_top10', 'country_top5', 'company_top10'
 ]
 
 # 3. 인코딩
@@ -31,17 +44,25 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 clf = DecisionTreeClassifier(max_depth=5, random_state=42)
 clf.fit(X_train, y_train)
 
-# 7. 교차검증 평가
+# 7. 교차검증 평가 테스트셋 평가
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 cv_scores = cross_val_score(clf, X, y, cv=cv, scoring='accuracy')
 print("Cross-validation scores:", cv_scores)
 print("Mean accuracy:", np.mean(cv_scores), "Std:", np.std(cv_scores))
 
-# 7. 평가
 y_pred = clf.predict(X_test)
-print("Accuracy:", accuracy_score(y_test, y_pred))
 print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# Report.txt 저장
+conf_matrix = confusion_matrix(y_test, y_pred)
+class_report = classification_report(y_test, y_pred)
+
+with open(os.path.join(save_dir, "Report.txt"), "w") as f:
+    f.write("Cross-validation scores: " + str(cv_scores) + "\n")
+    f.write(f"Mean accuracy: {np.mean(cv_scores)} Std: {np.std(cv_scores)}\n\n")
+    f.write("Confusion Matrix:\n" + str(conf_matrix) + "\n\n")
+    f.write("Classification Report:\n" + class_report)
 
 # 8. 중요도 추출
 importances = clf.feature_importances_
@@ -61,7 +82,7 @@ for feature in feature_importance_df['feature']:
             matched = True
             break
     if not matched:
-        category_map[feature] = feature  # numeric feature는 그대로
+        category_map[feature] = feature  
 
 feature_importance_df['group'] = feature_importance_df['feature'].map(category_map)
 
@@ -76,4 +97,22 @@ plt.title("Total Feature Importance by Category (Log Scale)")
 plt.xlabel("Log(Importance)")
 plt.ylabel("Feature Group")
 plt.tight_layout()
+plt.savefig(os.path.join(save_dir, "Feature_Importance.png"))
+plt.show()
+
+# 트리 시각화 (상위 분기만 표시)
+plt.figure(figsize=(20, 10))
+plot_tree(
+    clf,
+    feature_names=X.columns,
+    class_names=["Not Hit", "Hit"],
+    filled=True,
+    impurity=True,
+    rounded=True,
+    max_depth=4,
+    fontsize=8 
+)
+plt.title("Decision Tree Visualization", fontsize=16)
+plt.tight_layout()
+plt.savefig(os.path.join(save_dir, "Plot_Tree.png"))
 plt.show()

@@ -82,4 +82,4 @@ for k, v in cluster_names.items():
 
 df.to_csv("data/feature-engineered/movies_clustered.csv", index=False)
 
-
+print("데이터셋 저장 완료: data/feature-engineered/movies_clustered.csv")
