@@ -17,7 +17,7 @@ df = pd.read_csv("data/feature-engineered/movies_normalized.csv")
 # Clustering: k-means
 # 영화 데이터를 유형별로 분류해서 숨겨진 패턴을 찾아내기 위한 기법
 
-# 1. 사용할 feature 지정 -> 
+# 1. 사용할 feature 지정
 cluster_features = ['budget', 'weighted_score']
 
 X = df[cluster_features]
