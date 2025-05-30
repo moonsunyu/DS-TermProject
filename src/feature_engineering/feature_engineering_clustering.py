@@ -38,7 +38,7 @@ kmeans = KMeans(n_clusters=3, random_state=42)
 df['cluster'] = kmeans.fit_predict(X_scaled)
 
 # 클러스터별 평균값 계산
-cluster_summary = df.groupby('cluster')[['budget', 'score', 'gross', 'is_hit']].mean().round(2)
+cluster_summary = df.groupby('cluster')[['budget', 'weighted_score']].mean().round(2)
 cluster_summary['count'] = df['cluster'].value_counts().sort_index()
 
 
@@ -47,27 +47,23 @@ cluster_summary['count'] = df['cluster'].value_counts().sort_index()
 
 # 분위수 확인
 print(df['budget'].describe())
+# 클러스터별 평균 is_hit 값 따로 계산
+hit_rate_per_cluster = df.groupby('cluster')['is_hit'].mean()
 
 cluster_names = {}
 for cluster in cluster_summary.index:
     row = cluster_summary.loc[cluster]
     budget = row['budget']
-    hit_rate = row['is_hit']
+    hit_rate = hit_rate_per_cluster[cluster]  # 👈 여기만 따로 불러옴
 
-    if budget >= 0.78:    # 상위 20%
-        if hit_rate >= 0.5:
-                name = "high-budget-success"
-        else:
-                name = "high-budget-failure"   
-    elif budget < 0.70:          # 하위 20%
-        if hit_rate >= 0.5:
-                name = "low-budget-success"
-        else:
-                name = "low-budget-failure" 
+    if budget >= 0.78:
+        name = "high-budget-success" if hit_rate >= 0.5 else "high-budget-failure"
+    elif budget < 0.70:
+        name = "low-budget-success" if hit_rate >= 0.5 else "low-budget-failure"
     else:
         name = "mid-budget"
 
-    cluster_names[cluster] = name 
+    cluster_names[cluster] = name
 
 # 이름 매핑 추가
 df['cluster_label'] = df['cluster'].map(cluster_names)

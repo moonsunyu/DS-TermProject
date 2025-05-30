@@ -115,5 +115,5 @@ plot_tree(
 )
 plt.title("Decision Tree Visualization", fontsize=16)
 plt.tight_layout()
-plt.savefig(os.path.join(save_dir, "Plot_Tree.png"))
+
 plt.show()
