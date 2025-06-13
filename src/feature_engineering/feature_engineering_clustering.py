@@ -5,25 +5,27 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 
-# feature engineering된 데이터셋 (clustering 전)
+# Dataset after feature engineering (before clustering)
 df = pd.read_csv("data/feature-engineered/movies_normalized.csv") 
 
 # Clustering: k-means
-# 영화 데이터를 유형별로 분류해서 숨겨진 패턴을 찾아내기 위한 기법
+# A technique for classifying movie data by type and finding hidden patterns
 cluster_features = ['budget', 'weighted_score']
 X = df[cluster_features]
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# PCA (2차원 축소)
+
+# PCA (2D reduction)
 pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X_scaled)
 
-# 1. K=3 클러스터링
+
+# K=3 clustering
 kmeans3 = KMeans(n_clusters=3, random_state=42)
 labels3 = kmeans3.fit_predict(X_scaled)
 
-# # 시각화
+# # Visualization
 # plt.figure(figsize=(12, 5))
 # # K=3
 # plt.subplot(1, 2, 1)
@@ -33,21 +35,22 @@ labels3 = kmeans3.fit_predict(X_scaled)
 # plt.ylabel("PCA Component 2")
 # plt.show() 
 
-# KMeans 클러스터링 (k=3)
+# k-means clustering
 kmeans = KMeans(n_clusters=3, random_state=42)
 df['cluster'] = kmeans.fit_predict(X_scaled)
 
-# 클러스터별 평균값 계산
+# Calculate average by cluster
 cluster_summary = df.groupby('cluster')[['budget', 'weighted_score']].mean().round(2)
 cluster_summary['count'] = df['cluster'].value_counts().sort_index()
 
 
-# 클러스터 이름 붙이기
-# 클러스터별 특성을 보고 수동으로 이름을 붙여줌
+# Naming clusters
+# Manually name clusters by looking at their characteristics
 
-# 분위수 확인
+# Checking the quantile
 print(df['budget'].describe())
-# 클러스터별 평균 is_hit 값 따로 계산
+
+# Calculate average is_hit value separately for each cluster
 hit_rate_per_cluster = df.groupby('cluster')['is_hit'].mean()
 
 cluster_names = {}
@@ -65,10 +68,11 @@ for cluster in cluster_summary.index:
 
     cluster_names[cluster] = name
 
-# 이름 매핑 추가
+
+# Add name mapping
 df['cluster_label'] = df['cluster'].map(cluster_names)
 
-# 결과 출력
+# Print Result
 print("Average Summary by Cluster:")
 print(cluster_summary)
 print("\nMapping Cluster Names:")
@@ -78,4 +82,4 @@ for k, v in cluster_names.items():
 
 df.to_csv("data/feature-engineered/movies_clustered.csv", index=False)
 
-print("데이터셋 저장 완료: data/feature-engineered/movies_clustered.csv")
+print("Saved Dataset: data/feature-engineered/movies_clustered.csv")

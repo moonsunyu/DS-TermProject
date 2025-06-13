@@ -1,0 +1,18 @@
+Model: Random Forest
+Accuracy: 0.9366
+Cross-validation scores: [0.91360294 0.91904324 0.91720331 0.93100276 0.92180313]
+Mean CV accuracy: 0.9205, Std: 0.0059
+
+Confusion Matrix:
+[[524  51]
+ [ 18 495]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.97      0.91      0.94       575
+           1       0.91      0.96      0.93       513
+
+    accuracy                           0.94      1088
+   macro avg       0.94      0.94      0.94      1088
+weighted avg       0.94      0.94      0.94      1088

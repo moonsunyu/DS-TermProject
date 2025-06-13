@@ -7,26 +7,26 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt
 
-# 저장 경로
+# Save path
 save_dir = "results/feature-engineering/clustering"
 os.makedirs(save_dir, exist_ok=True)
 
-# feature engineering된 데이터셋 (clustering 전)
+# Dataset with feature engineering; before clustering
 df = pd.read_csv("data/feature-engineered/movies_normalized.csv") 
 
 # Clustering: k-means
 # 영화 데이터를 유형별로 분류해서 숨겨진 패턴을 찾아내기 위한 기법
 
-# 1. 사용할 feature 지정
+# 1. Specify features to use
 cluster_features = ['budget', 'weighted_score']
 
 X = df[cluster_features]
 
-# 5. 정규화 (StandardScaler)
+# StandardScaler
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Elbow method - k에 어떤 값이 들어가야 가장 적절한지 알 수 있음
+# Elbow method - to determine the most appropriate value for k
 inertia = []
 K_range = range(1, 10)
 for k in K_range:
@@ -42,30 +42,19 @@ plt.title("Elbow Method")
 plt.savefig(os.path.join(save_dir, "elbow.png"))
 plt.show()
 
-# # k=3, k=4인 경우 inertia가 급격히 떨어지는 구간; 점선으로 표시 후 다시 나타냄
-# plt.plot(K_range, inertia, 'bo-')
-# plt.vlines(3, ymin=min(inertia)*0.9999, ymax=max(inertia)*1.0003, linestyles='--', colors='g', label='k=3')
-# plt.vlines(4, ymin=min(inertia)*0.9999, ymax=max(inertia)*1.0003, linestyles='--', colors='r', label='k=4')
-
-# plt.xlabel("k")
-# plt.ylabel("Inertia")
-# plt.title("Elbow Method")
-# plt.legend()
-# plt.show()
-
-# PCA (2차원 축소)
+# PCA 
 pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X_scaled)
 
-# 1. K=3 클러스터링
+# 1. K=3 clustering
 kmeans3 = KMeans(n_clusters=3, random_state=42)
 labels3 = kmeans3.fit_predict(X_scaled)
 
-# 2. K=4 클러스터링
+# 2. K=4 clustering
 kmeans4 = KMeans(n_clusters=4, random_state=42)
 labels4 = kmeans4.fit_predict(X_scaled)
 
-# 시각화
+# Visualization
 plt.figure(figsize=(12, 5))
 # K=3
 plt.subplot(1, 2, 1)
@@ -90,7 +79,7 @@ for k in range(2, 8):
     score = silhouette_score(X_scaled, labels)
     print(f"k={k}, Silhouette Score={score:.4f}")
 
-# 7. Silhouette Score 저장
+# Save results
 with open(os.path.join(save_dir, "silhouette_scores.txt"), "w") as f:
     for k in range(2, 8):
         kmeans = KMeans(n_clusters=k, random_state=42)
@@ -98,4 +87,4 @@ with open(os.path.join(save_dir, "silhouette_scores.txt"), "w") as f:
         score = silhouette_score(X_scaled, labels)
         f.write(f"k={k}, Silhouette Score={score:.4f}\n")
         
-# k=3 선택
+# K=3

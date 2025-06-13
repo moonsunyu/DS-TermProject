@@ -1,8 +1,9 @@
 # decisionTree_2.py
-# 전처리된 데이터셋에서 gross, budget drop하고 난 뒤에 기본적인 모델 학습 실행
+# Train a basic model after dropping 'gross' and 'budget' from the preprocessed dataset
 
-# 모델 학습에 활용되는 feature가 제한된다는 문제는 해결됐으나
-# 모델의 정확도가 크게 떨어짐; 사용할 수 없음
+# The issue of feature dominance was resolved,
+# but model accuracy dropped significantly, making it impractical to use.
+
 
 import os
 import pandas as pd
@@ -15,7 +16,7 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix, classification_report
 
-# 저장 경로 설정
+# Save path
 save_dir = "results/learning-models/decisionTree2"
 os.makedirs(save_dir, exist_ok=True)
 

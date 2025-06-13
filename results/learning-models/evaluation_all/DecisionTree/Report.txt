@@ -1,5 +1,7 @@
+Model: DecisionTree
+Accuracy: 0.9301
 Cross-validation scores: [0.91176471 0.91904324 0.9024839  0.92364305 0.92548298]
-Mean accuracy: 0.9164835759510795 Std: 0.008450537616261104
+Mean accuracy: 0.9165 Std: 0.0085
 
 Confusion Matrix:
 [[537  38]

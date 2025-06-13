@@ -1,8 +1,8 @@
 # decisionTree_1.py
-# 전처리된 데이터셋으로 기본적인 모델 학습 실행
+# Train a basic decision tree model using the preprocessed dataset
 
-# 정확도는 높으나, 과적합(overfitting) 가능성 존재
-# 모델 학습에 활용되는 feature가 제한됨; gross와 budget이 너무 강력
+# The model shows high accuracy but may suffer from overfitting.
+# Only a limited set of features is used; 'gross' and 'budget' dominate the model.
 
 import os
 import pandas as pd
@@ -15,36 +15,36 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix, classification_report
 
-# 저장 경로 설정
+# Save path
 save_dir = "results/learning-models/decisionTree1"
 os.makedirs(save_dir, exist_ok=True)
 
-# 1. 데이터 로드
+# 1. Load data
 df = pd.read_csv("data/feature-engineered/movies_clustered.csv")
 df_model = df.drop(columns=['name', 'cluster_label']) # gross, budget 모두 유지
 
-# 2. 피처 설정
+# 2. Set feature
 numeric_cols = ['gross', 'budget', 'score', 'log_votes', 'runtime', 'weighted_score']
 categorical_cols = [
     'rating', 'runtime_category', 'director_top10', 'writer_top10',
     'star_top30', 'genre_top10', 'country_top5', 'company_top10'
 ]
 
-# 3. 인코딩
+# 3. Encoding
 df_encoded = pd.get_dummies(df_model, columns=categorical_cols, drop_first=True)
 
-# 4. X, y 정의
+# 4. Define X,y
 X = df_encoded.drop(columns=['is_hit'])
 y = df_encoded['is_hit']
 
-# 5. 분할
+# 5. Split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 6. 학습
+# 6. Learning
 clf = DecisionTreeClassifier(max_depth=5, random_state=42)
 clf.fit(X_train, y_train)
 
-# 7. 교차검증 평가 테스트셋 평가
+# 7. Cross-validation evaluation and test set evaluation
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 cv_scores = cross_val_score(clf, X, y, cv=cv, scoring='accuracy')
 print("Cross-validation scores:", cv_scores)
@@ -55,7 +55,7 @@ print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
 
-# Report.txt 저장
+# Save Report.txt 
 conf_matrix = confusion_matrix(y_test, y_pred)
 class_report = classification_report(y_test, y_pred)
 
@@ -65,7 +65,7 @@ with open(os.path.join(save_dir, "Report.txt"), "w") as f:
     f.write("Confusion Matrix:\n" + str(conf_matrix) + "\n\n")
     f.write("Classification Report:\n" + class_report)
 
-# 8. 중요도 추출
+# 8. Feature Importance
 importances = clf.feature_importances_
 feature_names = X.columns
 feature_importance_df = pd.DataFrame({
@@ -73,7 +73,7 @@ feature_importance_df = pd.DataFrame({
     'importance': importances
 }).sort_values(by='importance', ascending=False)
 
-# 9. 그룹 매핑
+# 9. Group mapping
 category_map = {}
 for feature in feature_importance_df['feature']:
     matched = False
@@ -83,14 +83,13 @@ for feature in feature_importance_df['feature']:
             matched = True
             break
     if not matched:
-        category_map[feature] = feature  # numeric feature는 그대로
+        category_map[feature] = feature  
 
 feature_importance_df['group'] = feature_importance_df['feature'].map(category_map)
 
-# 10. 그룹별 중요도 합산
 grouped_importance = feature_importance_df.groupby('group')['importance'].sum().sort_values(ascending=False)
 
-# 11. 시각화 (log scale)
+# Visualization
 plt.figure(figsize=(10, 6))
 sns.barplot(x=grouped_importance.values, y=grouped_importance.index, palette='magma')
 plt.xscale('log')
@@ -101,7 +100,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(save_dir, "Feature_Importance.png"))
 plt.show()
 
-# 트리 시각화 (상위 분기만 표시)
+# Tree visualization
 plt.figure(figsize=(20, 10))
 plot_tree(
     clf,
