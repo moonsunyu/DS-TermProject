@@ -1,7 +1,7 @@
 # decisionTree_3.py
-# 강력한 모델을 단순히 제거하는 게 아니라 대체할 수 있는 파생 feature인 'roi' 생성
+# Instead of simply removing strong features, a derived feature 'roi' (return on investment) was introduced as a replacement
 
-# 모델 성능은 좋으나, feature 중요도가 상식적으로 말이 안 되는 부분들이 다수 존재
+# The model performs well, but the feature importance results include several values that are not intuitively reasonable
 
 import os
 import pandas as pd
@@ -18,51 +18,50 @@ from sklearn.metrics import confusion_matrix, classification_report
 import warnings
 warnings.filterwarnings('ignore')
 
-# 저장 경로 설정
+# Save path
 save_dir = "results/learning-models/decisionTree3"
 os.makedirs(save_dir, exist_ok=True)
 
-# 1. 데이터 로드 및 전처리
+# 1. Data load and preprocessing
 df = pd.read_csv("data/feature-engineered/movies_clustered.csv")
 df = df.drop(columns=["name", "cluster_label", "votes"]) 
 
-# 2. ROI 파생 변수 추가
+# 2. Add ‘roi’ (=‘gross’/’budget’)
 df["roi"] = df["gross"] / df["budget"]
 df["roi"].replace([np.inf, -np.inf], np.nan, inplace=True)
 df["roi"].fillna(df["roi"].median(), inplace=True)
-df = df.drop(columns=["gross", "budget"]) # 강력한 특성을 제거하고 대체함
+df = df.drop(columns=["gross", "budget"]) # Remove and replace strong columns
 
-# 3. 타겟과 피처 분리
+# 3. Separate targets and features
 X = df.drop(columns=["is_hit"])
 y = df["is_hit"]
 
-# 4. 범주형 인코딩
+# 4. Categorical Encoding
 X_encoded = pd.get_dummies(X, drop_first=True)
 
-# 5. 수치형 피처 스케일링
-numeric_cols = ['score', 'runtime', 'log_votes', 'weighted_score', 'roi'] #votes는 log_votes와 중복되므로 제외
+# 5. Numerical Feature scaling
+numeric_cols = ['score', 'runtime', 'log_votes', 'weighted_score', 'roi'] # votes is excluded because it is duplicated with log_votes
 scaler = StandardScaler()
 X_encoded[numeric_cols] = scaler.fit_transform(X_encoded[numeric_cols])
 
-# 6. 학습/테스트 분할
+# 6. Training/Test Split
 X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
 
-# 7.DecisionTree 학습
+# 7.DecisionTree Learning
 clf = DecisionTreeClassifier(criterion='entropy', max_depth=10, random_state=42)
 clf.fit(X_train, y_train)
 
-# 8. 교차검증 평가
+# 8. Cross-validation evaluation and test set evaluation
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 cv_scores = cross_val_score(clf, X_encoded, y, cv=cv, scoring='accuracy')
 print("Cross-validation scores:", cv_scores)
 print("Mean accuracy:", np.mean(cv_scores), "Std:", np.std(cv_scores))
 
-# 9. 테스트셋 평가
 y_pred = clf.predict(X_test)
 print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
-# Report.txt 저장
+# Report.txt
 conf_matrix = confusion_matrix(y_test, y_pred)
 class_report = classification_report(y_test, y_pred)
 
@@ -72,12 +71,10 @@ with open(os.path.join(save_dir, "Report.txt"), "w") as f:
     f.write("Confusion Matrix:\n" + str(conf_matrix) + "\n\n")
     f.write("Classification Report:\n" + class_report)
 
-# 1. 특성 중요도 계산
+# Feature importance
 feature_importances = clf.feature_importances_
 feature_names = X_encoded.columns
 
-# 2. 그룹 매핑: numeric_cols와 categorical_cols 기반
-# 범주형 변수 리스트 (X에 있는 컬럼 중 one-hot encoding된 범주형 변수 접두사들)
 categorical_cols = [
     'rating', 'runtime_category', 'director_top10', 'writer_top10',
     'star_top30', 'genre_top10', 'country_top5', 'company_top10', 'cluster'
@@ -91,19 +88,19 @@ for name in feature_names:
             matched = True
             break
     if not matched:
-        category_map[name] = name  # 수치형 피처는 그대로
+        category_map[name] = name  
 
-# 3. 중요도 데이터프레임 생성 + 그룹 매핑
+
 importance_df = pd.DataFrame({
     'feature': feature_names,
     'importance': feature_importances
 })
 importance_df['group'] = importance_df['feature'].map(category_map)
 
-# 4. 그룹별 중요도 합산 후 정렬
+
 grouped_importance = importance_df.groupby('group')['importance'].sum().sort_values(ascending=False).head(20)
 
-# 5. 시각화 (선형 값 그대로, x축 눈금만 로그)
+
 plt.figure(figsize=(12, 6))
 colors = sns.color_palette("magma", len(grouped_importance))
 
@@ -113,7 +110,7 @@ sns.barplot(
     palette=colors
 )
 
-# x축 로그 눈금 설정
+
 plt.xscale("log")
 plt.gca().xaxis.set_major_locator(LogLocator(base=10.0))
 plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda y, _: f"$10^{{{int(np.log10(y))}}}$"))
@@ -127,7 +124,6 @@ plt.savefig(os.path.join(save_dir, "Feature_Importance.png"))
 plt.show()
 
 
-# 트리 시각화 (상위 분기만 표시)
 plt.figure(figsize=(20, 10))
 plot_tree(
     clf,

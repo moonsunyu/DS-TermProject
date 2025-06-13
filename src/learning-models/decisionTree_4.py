@@ -1,8 +1,9 @@
 # 최종 모델
-# 파생 변수('roi') 추가 + target encoding
+# Final model
+# Added derived feature ('roi') + target encoding
 
-# decisionTree3에 target encoding까지 추가
-# 감독, 배우, 작가가 영화 흥행에 미치는 영향을 알 수 있음
+# Target encoding was applied to decisionTree3
+# Helps reveal the impact of directors, actors, and writers on movie success
 
 import os
 import pandas as pd
@@ -17,7 +18,7 @@ from matplotlib.ticker import LogLocator, FuncFormatter
 import warnings
 warnings.filterwarnings('ignore')
 
-# 저장 경로 설정
+# Save path
 save_dir = "results/learning-models/decisionTree4"
 os.makedirs(save_dir, exist_ok=True)
 
@@ -42,7 +43,7 @@ df["writer_encoded"] = df["writer_top10"].map(writer_mean_map)
 
 df = df.drop(columns=["star_top30", "director_top10", "writer_top10"])
 
-# 4. 타겟 분리 및 학습/테스트 분할
+# 4. Target separation and training/test split
 y = df["is_hit"]
 X = df.drop(columns=["is_hit"])
 
@@ -51,15 +52,15 @@ X["director_score_interaction"] = X["director_encoded"] * X["score"]
 X["writer_score_interaction"] = X["writer_encoded"] * X["score"]
 
 
-# 5. 범주형 인코딩 (One-hot encoding 적용 대상만)
+# 5. Categorical encoding (for one-hot encoding categories)
 categorical_cols_to_encode = ['rating', 'runtime_category', 'genre_top10',
                                'country_top5', 'company_top10', 'cluster']
 X = pd.get_dummies(X, columns=categorical_cols_to_encode, drop_first=True)
 
-# 6. 학습/테스트 분할
+# 6. Split train/test data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 7. 스케일링
+# 7. Scaling
 numeric_cols = [
     'score', 'runtime', 'log_votes', 'weighted_score',
     'roi', 'star_encoded', 'director_encoded', 'writer_encoded',
@@ -69,22 +70,21 @@ scaler = StandardScaler()
 X_train[numeric_cols] = scaler.fit_transform(X_train[numeric_cols])
 X_test[numeric_cols] = scaler.transform(X_test[numeric_cols])
 
-# 8. 모델 학습 (Decision Tree)
+# 8. Learning (Decision Tree)
 clf = DecisionTreeClassifier(criterion='entropy', max_depth=10, random_state=42)
 clf.fit(X_train, y_train)
 
-# 9. 교차검증 평가
+# 8. Cross-validation evaluation and test set evaluation
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 cv_scores = cross_val_score(clf, X_train, y_train, cv=cv, scoring='accuracy')
 print("Cross-validation scores:", cv_scores)
 print("Mean accuracy:", np.mean(cv_scores), "Std:", np.std(cv_scores))
 
-# 10. 테스트셋 평가
 y_pred = clf.predict(X_test)
 print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
-# Report.txt 저장
+# Report.txt
 conf_matrix = confusion_matrix(y_test, y_pred)
 class_report = classification_report(y_test, y_pred)
 
@@ -94,11 +94,10 @@ with open(os.path.join(save_dir, "Report.txt"), "w") as f:
     f.write("Confusion Matrix:\n" + str(conf_matrix) + "\n\n")
     f.write("Classification Report:\n" + class_report)
 
-# 11. 특성 중요도 시각화
+# Feature Importance
 feature_importances = clf.feature_importances_
 feature_names = X_train.columns
 
-# 그룹 매핑
 categorical_cols = [
     'rating', 'runtime_category', 'genre_top10',
     'country_top5', 'company_top10', 'cluster'
@@ -121,7 +120,6 @@ importance_df = pd.DataFrame({
 importance_df['group'] = importance_df['feature'].map(category_map)
 grouped_importance = importance_df.groupby('group')['importance'].sum().sort_values(ascending=False).head(20)
 
-# 시각화
 plt.figure(figsize=(12, 6))
 colors = sns.color_palette("magma", len(grouped_importance))
 sns.barplot(
@@ -141,7 +139,6 @@ plt.savefig(os.path.join(save_dir, "Feature_Importance.png"))
 plt.show()
 
 
-# 12. 트리 시각화
 plt.figure(figsize=(20, 10))
 plot_tree(
     clf,
